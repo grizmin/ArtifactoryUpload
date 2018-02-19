@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
+
 import sys
-import os
 import subprocess
 import datetime
 import argparse
 import logging
-import shlex
+import time
 
 # Log to stdout
 logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.INFO)
 streamformater = logging.Formatter("%(levelname)s:  %(message)s")
 
 logstreamhandler = logging.StreamHandler()
@@ -17,10 +17,14 @@ logstreamhandler.setLevel(logging.INFO)
 logstreamhandler.setFormatter(streamformater)
 logger.addHandler(logstreamhandler)
 
-class RunCommand():
+
+class RunCommand:
+    """ Safe run command """
     allowed_commands = ['jfrog']
+
     def __init__(self, command):
         self.command = command
+        self.time_taken = 0
 
     @property
     def command(self):
@@ -28,17 +32,29 @@ class RunCommand():
 
     @command.setter
     def command(self, cmd):
+        """ assert that command is in allowed_commands """
         try:
-            assert cmd.split()[0] in self.allowed_commands, 'illegal command. allowed_commands: {}'.format(self.allowed_commands)
+            assert cmd.split()[0] in self.allowed_commands, 'illegal command. allowed_commands: {}'.format(
+                self.allowed_commands)
         except AssertionError:
             print('illegal command. allowed_commands: {}'.format(self.allowed_commands))
             exit(1)
         self._command = cmd
 
     def run(self):
+        """ Runs the command.
+            :sets time_taken
+            :returns command exit code
+        """
+
         command = self.command.split()
         # c = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-        subprocess.call(command,shell=True)
+        start = time.time()
+        return_code = subprocess.call(command)
+        stop = time.time()
+        self.time_taken = stop - start
+        return return_code
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -47,20 +63,22 @@ def main():
 
     # version magic
     verarr = arg.build_version.split('.')
-    assert len(verarr) == 4
+    assert len(verarr) == 4, "Invalid version: {}".format(arg.build_version)
     major_version = '.'.join(verarr[:2])
     minor_version = '.'.join(verarr[2:])
 
-    print(major_version, minor_version)
-    print('executing: ./command {}'.format(arg.build_version))
     cmd = "jfrog rt upload --threads=16\
-            --build-number={build_version} /dserver/poker/{build_version_major}/{build_version_minor}/\(*\)/*\
-             generic-poker-snapshot-local/{build_version_major}/{build_version_minor}/\{1\}/".format(
+ /dserver/poker/{build_version_major}/{build_version_minor}/(*)/*\
+ generic-poker-snapshot-local/{build_version_major}/{build_version_minor}/{{1}}/".format(
         build_version_major=major_version, build_version_minor=minor_version, build_version=arg.build_version
     )
-    print(cmd)
-    c1 = RunCommand(cmd)
-    c1.run()
+    upload_command = RunCommand(cmd)
+    exit_code = upload_command.run()
+    if exit_code:
+        logger.error("[!] Upload failed.")
+        exit(exit_code)
+    else:
+        logger.info("[*] Upload successful. Upload took {:.3} seconds.".format(upload_command.time_taken))
 
 
 if __name__ == '__main__':
