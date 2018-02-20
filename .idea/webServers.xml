@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="d2993a2c-db55-4343-89a1-8f0e6c7492f6" name="hopping" url="http://192.168.201.84">
-        <fileTransfer host="192.168.201.84" port="22" rootFolder="/home/konstantin" accessType="SFTP" authAgent="true">
+        <fileTransfer host="192.168.201.84" port="22" rootFolder="/home/konstantin" accessType="SFTP">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>

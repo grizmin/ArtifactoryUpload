@@ -72,18 +72,19 @@ def main():
     major_version = '.'.join(verarr[:2])
     minor_version = '.'.join(verarr[2:])
 
-    cmd = "jfrog rt upload --threads=16\
+    cmd = "jfrog rt upload --exclude-patterns=*.sha256;*.md5 --threads=16\
  /dserver/poker/{build_version_major}/{build_version_minor}/(*)/*\
  generic-poker-snapshot-local/{build_version_major}/{build_version_minor}/{{1}}/".format(
         build_version_major=major_version, build_version_minor=minor_version, build_version=arg.build_version
     )
+    print(cmd)
     upload_command = RunCommand(cmd)
     exit_code = upload_command.run(timeout=60)
     if exit_code:
         logger.error("[!] Upload failed.")
         exit(exit_code)
     else:
-        logger.info("[*] Files were uploaded successfully for {:.3} seconds.".format(upload_command.time_taken))
+        logger.info("[*] Files were uploaded successfully for {0:.2f} seconds.".format(upload_command.time_taken))
 
 
 if __name__ == '__main__':
