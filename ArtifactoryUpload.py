@@ -41,7 +41,7 @@ class RunCommand:
             exit(1)
         self._command = cmd
 
-    def run(self):
+    def run(self, timeout = 300):
         """ Runs the command.
             :sets time_taken
             :returns command exit code
@@ -50,7 +50,12 @@ class RunCommand:
         command = self.command.split()
         # c = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         start = time.time()
-        return_code = subprocess.call(command, timeout=300)
+        try:
+            return_code = subprocess.call(command, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            logger.error("Timeout reached. Subprocess killed.")
+            return_code = 1
+
         stop = time.time()
         self.time_taken = stop - start
         return return_code
@@ -73,7 +78,7 @@ def main():
         build_version_major=major_version, build_version_minor=minor_version, build_version=arg.build_version
     )
     upload_command = RunCommand(cmd)
-    exit_code = upload_command.run()
+    exit_code = upload_command.run(timeout=60)
     if exit_code:
         logger.error("[!] Upload failed.")
         exit(exit_code)
