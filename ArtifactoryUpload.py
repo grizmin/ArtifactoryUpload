@@ -77,7 +77,7 @@ def main():
  generic-poker-snapshot-local/{build_version_major}/{build_version_minor}/{{1}}/".format(
         build_version_major=major_version, build_version_minor=minor_version, build_version=arg.build_version
     )
-    print(cmd)
+
     upload_command = RunCommand(cmd)
     exit_code = upload_command.run(timeout=60)
     if exit_code:
