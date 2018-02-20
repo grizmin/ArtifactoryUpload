@@ -10,7 +10,7 @@ import time
 # Log to stdout
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-streamformater = logging.Formatter("%(levelname)s:  %(message)s")
+streamformater = logging.Formatter("[%(levelname)s] %(message)s")
 
 logstreamhandler = logging.StreamHandler()
 logstreamhandler.setLevel(logging.INFO)
@@ -50,7 +50,7 @@ class RunCommand:
         command = self.command.split()
         # c = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         start = time.time()
-        return_code = subprocess.call(command)
+        return_code = subprocess.call(command, timeout=300)
         stop = time.time()
         self.time_taken = stop - start
         return return_code
@@ -78,7 +78,7 @@ def main():
         logger.error("[!] Upload failed.")
         exit(exit_code)
     else:
-        logger.info("[*] Upload successful. Upload took {:.3} seconds.".format(upload_command.time_taken))
+        logger.info("[*] Files were uploaded successfully for {:.3} seconds.".format(upload_command.time_taken))
 
 
 if __name__ == '__main__':
