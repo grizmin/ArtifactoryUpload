@@ -63,36 +63,36 @@ class RunCommand:
         self.time_taken = stop - start
         return return_code
 
-    def main():
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--build_version', '-bv', help='build version. Eg. \'18.3.0.95\n\'', required=True)
-        parser.add_argument('--timeout', '-t', help='timeout in seconds. Default 300', type=int, required=False,
-                            default=300)
-        parser.add_argument('--retry', '-r',
-                            help='retry times in case of upload failure. Defaults to 1 (run only once)', type=int,
-                            required=False, default=1)
-        arg = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--build_version', '-bv', help='build version. Eg. \'18.3.0.95\n\'', required=True)
+    parser.add_argument('--timeout', '-t', help='timeout in seconds. Default 300', type=int, required=False,
+                        default=300)
+    parser.add_argument('--retry', '-r',
+                        help='retry times in case of upload failure. Defaults to 1 (run only once)', type=int,
+                        required=False, default=1)
+    arg = parser.parse_args()
 
-        # version magic
-        verarr = arg.build_version.split('.')
-        assert len(verarr) == 4, "Invalid version: {}".format(arg.build_version)
-        major_version = '.'.join(verarr[:2])
-        minor_version = '.'.join(verarr[2:])
+    # version magic
+    verarr = arg.build_version.split('.')
+    assert len(verarr) == 4, "Invalid version: {}".format(arg.build_version)
+    major_version = '.'.join(verarr[:2])
+    minor_version = '.'.join(verarr[2:])
 
-        cmd = "jfrog rt upload --exclude-patterns=*.sha256;*.md5 --threads=16\
-     /dserver/poker/{build_version_major}/{build_version_minor}/(*)/*\
-     generic-poker-snapshot-local/{build_version_major}/{build_version_minor}/{{1}}/".format(
-            build_version_major=major_version, build_version_minor=minor_version
-        )
+    cmd = "jfrog rt upload --exclude-patterns=*.sha256;*.md5 --threads=16\
+ /dserver/poker/{build_version_major}/{build_version_minor}/(*)/*\
+ generic-poker-snapshot-local/{build_version_major}/{build_version_minor}/{{1}}/".format(
+        build_version_major=major_version, build_version_minor=minor_version
+    )
 
-        upload_command = RunCommand(cmd)
-        exit_code = upload_command.run(timeout=arg.timeout, retry=arg.retry)
-        if exit_code:
-            logger.error("[!] Upload failed.")
-        else:
-            logger.info("[*] Files were uploaded successfully for {0:.2f} seconds.".format(upload_command.time_taken))
+    upload_command = RunCommand(cmd)
+    exit_code = upload_command.run(timeout=arg.timeout, retry=arg.retry)
+    if exit_code:
+        logger.error("[!] Upload failed.")
+    else:
+        logger.info("[*] Files were uploaded successfully for {0:.2f} seconds.".format(upload_command.time_taken))
 
-    if __name__ == '__main__':
-        logger.info("Starting {} on {} with params: {}".format(sys.argv[0],
-                                                               datetime.datetime.today(), sys.argv[1:]))
-        main()
+if __name__ == '__main__':
+    logger.info("Starting {} on {} with params: {}".format(sys.argv[0],
+                                                           datetime.datetime.today(), sys.argv[1:]))
+    main()
